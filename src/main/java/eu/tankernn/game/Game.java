@@ -33,7 +33,6 @@ public class Game extends TankernnGame {
 	MousePicker picker;
 
 	List<Entity> entities;
-	List<Entity> normalEntities;
 	List<Light> lights;
 	List<GuiTexture> guis;
 	Light sun;
@@ -43,9 +42,8 @@ public class Game extends TankernnGame {
 	Player player;
 
 	public Game() {
-		super(new Skybox(Texture.newCubeMap(InternalFile.fromFilenames("skybox", TEXTURE_FILES, "png"), 200), Texture.newCubeMap(InternalFile.fromFilenames("skybox", NIGHT_TEXTURE_FILES, "png"), 200), 200), DUDV_MAP, NORMAL_MAP);
+		super(new Skybox(Texture.newCubeMap(InternalFile.fromFilenames("skybox", TEXTURE_FILES, "png"), 200), Texture.newCubeMap(InternalFile.fromFilenames("skybox", NIGHT_TEXTURE_FILES, "png"), 200), 400), DUDV_MAP, NORMAL_MAP);
 		entities = new ArrayList<Entity>();
-		normalEntities = new ArrayList<Entity>();
 
 		lights = new ArrayList<Light>();
 		sun = new Light(new Vector3f(1000, 1000, 0), new Vector3f(1f, 1f, 1f));
@@ -82,7 +80,7 @@ public class Game extends TankernnGame {
 	}
 
 	private void setupWater() {
-		WaterTile water = new WaterTile(50, 50, 0);
+		WaterTile water = new WaterTile(50, 50, 0, 60);
 		waterMaster.addWaterTile(water);
 	}
 
@@ -94,6 +92,7 @@ public class Game extends TankernnGame {
 		player.move();
 		camera.update();
 		picker.update();
+		terrainPack.update(player);
 		if (picker.getCurrentTerrainPoint() != null) {
 			entities.get(1).setPosition(picker.getCurrentTerrainPoint());
 		}
@@ -106,7 +105,7 @@ public class Game extends TankernnGame {
 
 		renderer.renderShadowMap(entities, sun);
 
-		Scene scene = new Scene(entities, normalEntities, terrainPack, lights, camera, sky);
+		Scene scene = new Scene(entities, terrainPack, lights, camera, sky);
 		waterMaster.renderBuffers(renderer, scene);
 		renderer.renderScene(scene, new Vector4f(0, 1, 0, Float.MAX_VALUE));
 		waterMaster.renderWater(camera, lights);

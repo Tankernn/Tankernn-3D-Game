@@ -21,6 +21,7 @@ public class Launcher {
 		}
 		
 		instance.cleanUp();
+		DisplayManager.closeDisplay();
 	}
 	
 	private static void init() {
