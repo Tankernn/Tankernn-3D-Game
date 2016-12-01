@@ -12,6 +12,7 @@ import java.util.List;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
+import eu.tankernn.gameEngine.GameLauncher;
 import eu.tankernn.gameEngine.TankernnGame;
 import eu.tankernn.gameEngine.entities.Entity;
 import eu.tankernn.gameEngine.entities.Light;
@@ -42,7 +43,7 @@ public class Game extends TankernnGame {
 	Player player;
 
 	public Game() {
-		super(new Skybox(Texture.newCubeMap(InternalFile.fromFilenames("skybox", TEXTURE_FILES, "png"), 200), Texture.newCubeMap(InternalFile.fromFilenames("skybox", NIGHT_TEXTURE_FILES, "png"), 200), 400), DUDV_MAP, NORMAL_MAP);
+		super(Settings.GAME_NAME, new Skybox(Texture.newCubeMap(InternalFile.fromFilenames("skybox", TEXTURE_FILES, "png"), 200), Texture.newCubeMap(InternalFile.fromFilenames("skybox", NIGHT_TEXTURE_FILES, "png"), 200), 400), DUDV_MAP, NORMAL_MAP);
 		entities = new ArrayList<Entity>();
 
 		lights = new ArrayList<Light>();
@@ -110,5 +111,9 @@ public class Game extends TankernnGame {
 		renderer.renderScene(scene, new Vector4f(0, 1, 0, Float.MAX_VALUE));
 		waterMaster.renderWater(camera, lights);
 		DisplayManager.updateDisplay();
+	}
+	
+	public static void main(String[] args) {
+		GameLauncher.launch(new Game());
 	}
 }
