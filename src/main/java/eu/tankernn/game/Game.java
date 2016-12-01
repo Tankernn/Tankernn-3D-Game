@@ -114,6 +114,7 @@ public class Game extends TankernnGame {
 	}
 	
 	public static void main(String[] args) {
+		GameLauncher.init(Settings.GAME_NAME);
 		GameLauncher.launch(new Game());
 	}
 }
