@@ -13,8 +13,8 @@ import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import eu.tankernn.gameEngine.GameLauncher;
-import eu.tankernn.gameEngine.TankernnGame;
-import eu.tankernn.gameEngine.entities.Entity;
+import eu.tankernn.gameEngine.TankernnGame3D;
+import eu.tankernn.gameEngine.entities.Entity3D;
 import eu.tankernn.gameEngine.entities.Light;
 import eu.tankernn.gameEngine.entities.Player;
 import eu.tankernn.gameEngine.entities.PlayerCamera;
@@ -30,10 +30,10 @@ import eu.tankernn.gameEngine.util.DistanceSorter;
 import eu.tankernn.gameEngine.util.InternalFile;
 import eu.tankernn.gameEngine.util.MousePicker;
 
-public class Game extends TankernnGame {
+public class Game extends TankernnGame3D {
 	MousePicker picker;
 
-	List<Entity> entities;
+	List<Entity3D> entities;
 	List<Light> lights;
 	List<GuiTexture> guis;
 	Light sun;
@@ -44,7 +44,7 @@ public class Game extends TankernnGame {
 
 	public Game() {
 		super(Settings.GAME_NAME, new Skybox(Texture.newCubeMap(InternalFile.fromFilenames("skybox", TEXTURE_FILES, "png"), 200), Texture.newCubeMap(InternalFile.fromFilenames("skybox", NIGHT_TEXTURE_FILES, "png"), 200), 400), DUDV_MAP, NORMAL_MAP);
-		entities = new ArrayList<Entity>();
+		entities = new ArrayList<Entity3D>();
 
 		lights = new ArrayList<Light>();
 		sun = new Light(new Vector3f(1000, 1000, 0), new Vector3f(1f, 1f, 1f));
@@ -62,7 +62,7 @@ public class Game extends TankernnGame {
 				loader.getModel(0).getRawModel().getBoundingBox(), terrainPack);
 		camera = new PlayerCamera(player, terrainPack);
 		entities.add(player);
-		entities.add(new Entity(2, new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), 1,
+		entities.add(new Entity3D(2, new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), 1,
 				loader.getModel(2).getRawModel().getBoundingBox()));
 		lights.add(new Light(new Vector3f(0, 1000, 0), new Vector3f(1f, 1f, 1f)));
 		picker = new MousePicker(camera, camera.getProjectionMatrix(), terrainPack, entities, guis);
