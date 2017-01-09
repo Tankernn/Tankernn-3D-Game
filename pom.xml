@@ -20,6 +20,13 @@
 			<artifactId>tankernn-game-engine</artifactId>
 			<version>1.1</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.netty/netty-all -->
+		<dependency>
+			<groupId>io.netty</groupId>
+			<artifactId>netty-all</artifactId>
+			<version>4.1.6.Final</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -40,10 +47,10 @@
 									<mainClass>eu.tankernn.game.Launcher</mainClass>
 								</manifest>
 								<manifestEntries>
-			                        <Specification-Title>${project.name}</Specification-Title>
-			                        <Specification-Version>${project.version}</Specification-Version>
-			                        <Implementation-Version>${build.number}</Implementation-Version>
-			                    </manifestEntries>
+									<Specification-Title>${project.name}</Specification-Title>
+									<Specification-Version>${project.version}</Specification-Version>
+									<Implementation-Version>${build.number}</Implementation-Version>
+								</manifestEntries>
 							</archive>
 							<!-- The filename of the assembled distribution file defualt ${project.build.finalName} -->
 							<finalName>${project.build.finalName}</finalName>
