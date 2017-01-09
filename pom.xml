@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>eu.tankernn.game</groupId>
 	<artifactId>tankernn-3d-game</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2</version>
 	<name>Tankernn 3D Game</name>
 
 	<repositories>
@@ -18,7 +18,7 @@
 		<dependency>
 			<groupId>eu.tankernn.gameEngine</groupId>
 			<artifactId>tankernn-game-engine</artifactId>
-			<version>1.1</version>
+			<version>1.2</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/io.netty/netty-all -->
 		<dependency>
@@ -44,7 +44,7 @@
 							<archive>
 								<manifest>
 									<addClasspath>true</addClasspath>
-									<mainClass>eu.tankernn.game.Launcher</mainClass>
+									<mainClass>eu.tankernn.game.Game</mainClass>
 								</manifest>
 								<manifestEntries>
 									<Specification-Title>${project.name}</Specification-Title>
