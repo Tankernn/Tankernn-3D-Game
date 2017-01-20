@@ -54,7 +54,7 @@ public class Game extends TankernnGame3D {
 		TerrainTexturePack texturePack = new TerrainTexturePack(backgroundTexture, rTexture, gTexture, bTexture);
 		Texture blendMap = loader.loadTexture("blendMap.png");
 
-		terrainPack = new TerrainPack(loader, texturePack, blendMap, 1337);
+		terrainPack = new TerrainPack(loader, texturePack, blendMap, 1235);
 	}
 
 	private void setupWater() {

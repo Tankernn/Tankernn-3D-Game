@@ -8,20 +8,11 @@
 	{
 		name: "barrel",
 		id: 1,
-<<<<<<< HEAD
 		reflectivity: 0.5d
 	},
 	{
 		name: "lantern",
 		id: 2,
 		reflectivity: 0.5d
-=======
-		reflectivity: 0.5
-	},
-	{
-		name: "lantern",
-		id: 2,
-		reflectivity: 0.5
->>>>>>> branch 'master' of git@tankernn.eu:game3d.git
 	}
 ]
