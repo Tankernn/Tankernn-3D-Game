@@ -14,5 +14,14 @@
 		name: "lantern",
 		id: 2,
 		reflectivity: 0.5d
+	},
+	{
+		name: "cowboy",
+		id: 3,
+		model: "model.dae",
+		texture: "diffuse.png",
+		animations: {
+			"run": "model.dae"
+		}
 	}
 ]
