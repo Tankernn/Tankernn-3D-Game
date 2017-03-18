@@ -18,11 +18,14 @@ import eu.tankernn.gameEngine.entities.PlayerCamera;
 import eu.tankernn.gameEngine.loader.textures.TerrainTexturePack;
 import eu.tankernn.gameEngine.loader.textures.Texture;
 import eu.tankernn.gameEngine.particles.ParticleMaster;
+import eu.tankernn.gameEngine.particles.ParticleSystem;
+import eu.tankernn.gameEngine.particles.ParticleTexture;
 import eu.tankernn.gameEngine.postProcessing.PostProcessor;
 import eu.tankernn.gameEngine.renderEngine.MasterRenderer;
 import eu.tankernn.gameEngine.renderEngine.water.WaterMaster;
 import eu.tankernn.gameEngine.renderEngine.water.WaterTile;
 import eu.tankernn.gameEngine.terrains.TerrainPack;
+import eu.tankernn.gameEngine.util.InternalFile;
 import eu.tankernn.gameEngine.util.MousePicker;
 
 public class Game extends TankernnGame3D {
@@ -48,6 +51,13 @@ public class Game extends TankernnGame3D {
 			e.printStackTrace();
 		}
 		particleMaster = new ParticleMaster(loader, camera.getProjectionMatrix());
+		try {
+			ParticleSystem system = new ParticleSystem(new ParticleTexture(Texture.newTexture(new InternalFile("particles/particleAtlas.png")).create(), 4, false), 10, 20, 1, 2);
+			system.setPosition(new Vector3f(10, 10, 10));
+			particleMaster.addSystem(system);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 		
 		entities.add(new Entity3D(loader.getModel(2), new Vector3f(10, 10, 10), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(2)));
 		
@@ -76,6 +86,11 @@ public class Game extends TankernnGame3D {
 	
 	public void update() {
 		super.update();
+		//TODO Check if there is a water tile above
+		if (camera.getPosition().y < 0 && postProcessor.blurFactor < 2)
+			postProcessor = new PostProcessor(loader, true);
+		else if (camera.getPosition().y > 0 && postProcessor.blurFactor > 0)
+			postProcessor = new PostProcessor(loader, false);
 		if (picker.getCurrentTerrainPoint() != null) {
 			entities.get(1).setPosition(picker.getCurrentTerrainPoint());
 		}
