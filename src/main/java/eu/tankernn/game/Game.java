@@ -18,41 +18,59 @@ import eu.tankernn.gameEngine.entities.Entity3D;
 import eu.tankernn.gameEngine.entities.Light;
 import eu.tankernn.gameEngine.entities.Player;
 import eu.tankernn.gameEngine.entities.PlayerCamera;
+import eu.tankernn.gameEngine.loader.textures.ModelTexture;
 import eu.tankernn.gameEngine.loader.textures.TerrainTexturePack;
 import eu.tankernn.gameEngine.loader.textures.Texture;
+import eu.tankernn.gameEngine.particles.ParticleMaster;
+import eu.tankernn.gameEngine.postProcessing.PostProcessor;
+import eu.tankernn.gameEngine.renderEngine.MasterRenderer;
+import eu.tankernn.gameEngine.renderEngine.water.WaterMaster;
 import eu.tankernn.gameEngine.renderEngine.water.WaterTile;
 import eu.tankernn.gameEngine.terrains.TerrainPack;
 import eu.tankernn.gameEngine.util.InternalFile;
+import eu.tankernn.gameEngine.util.MousePicker;
 
 public class Game extends TankernnGame3D {
 	public Game() {
-		super(Settings.GAME_NAME, TEXTURE_FILES, NIGHT_TEXTURE_FILES, DUDV_MAP, NORMAL_MAP, new Light(new Vector3f(1000, 1000, 0), new Vector3f(1f, 1f, 1f)));
+		super(Settings.GAME_NAME, TEXTURE_FILES, NIGHT_TEXTURE_FILES, new Light(new Vector3f(1, 1000, 1000), new Vector3f(1f, 1f, 1f)));
 		
 		try {
 			setupTerrain();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		setupWater();
 		
 		InternalFile charFile;
+		ModelTexture texture;
 		try {
-			charFile = new InternalFile("character.dae");
+			charFile = new InternalFile("model.dae");
+			texture = new ModelTexture(Texture.newTexture(new InternalFile("diffuse.png")).anisotropic().create());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return;
 		}
 		
 		Animation anim = AnimationLoader.loadAnimation(charFile);
-		AnimatedModel playerModel = loader.loadDAE(charFile);
-		playerModel.doAnimation(anim);
+		AnimatedModel playerModel = loader.loadDAE(charFile, texture);
+		playerModel.registerAnimation(anim);
 		player = new Player(playerModel, new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(0), terrainPack);
 		
 		entities.add(player);
 		camera = new PlayerCamera(player, terrainPack);
 		
-		entities.add(new Entity3D(loader.getModel(2), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(2)));
-		lights.add(new Light(new Vector3f(0, 1000, 0), new Vector3f(1f, 1f, 1f)));
+		renderer = new MasterRenderer(loader, camera, sky);
+		try {
+			waterMaster = new WaterMaster(loader, loader.loadTexture(DUDV_MAP), loader.loadTexture(NORMAL_MAP), camera);
+			setupWater();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		particleMaster = new ParticleMaster(loader, camera.getProjectionMatrix());
+		
+		entities.add(new Entity3D(loader.getModel(2), new Vector3f(10, 10, 10), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(2)));
+		
+		postProcessor = new PostProcessor(loader);
+		picker = new MousePicker(camera, camera.getProjectionMatrix(), entities, guiMaster.getGuis());
 	}
 	
 	private void setupTerrain() throws FileNotFoundException {
@@ -68,7 +86,7 @@ public class Game extends TankernnGame3D {
 	}
 	
 	private void setupWater() {
-		WaterTile water = new WaterTile(50, 50, 0, 60);
+		WaterTile water = new WaterTile(50, 50, 0, 50);
 		waterMaster.addWaterTile(water);
 	}
 	
@@ -80,7 +98,7 @@ public class Game extends TankernnGame3D {
 	}
 	
 	public static void main(String[] args) {
-		GameLauncher.init(Settings.GAME_NAME);
+		GameLauncher.init(Settings.GAME_NAME, 1600, 900);
 		GameLauncher.launch(new Game());
 	}
 }
