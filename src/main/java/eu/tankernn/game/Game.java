@@ -58,13 +58,13 @@ public class Game extends TankernnGame3D {
 	}
 	
 	private void setupTerrain() throws FileNotFoundException {
-		Texture backgroundTexture = loader.loadTexture("grassy.png");
-		Texture rTexture = loader.loadTexture("dirt.png");
-		Texture gTexture = loader.loadTexture("pinkFlowers.png");
-		Texture bTexture = loader.loadTexture("path.png");
+		Texture backgroundTexture = loader.loadTexture("textures/grassy.png");
+		Texture rTexture = loader.loadTexture("textures/dirt.png");
+		Texture gTexture = loader.loadTexture("textures/pinkFlowers.png");
+		Texture bTexture = loader.loadTexture("textures/path.png");
 		
 		TerrainTexturePack texturePack = new TerrainTexturePack(backgroundTexture, rTexture, gTexture, bTexture);
-		Texture blendMap = loader.loadTexture("blendMap.png");
+		Texture blendMap = loader.loadTexture("textures/blendMap.png");
 		
 		terrainPack = new TerrainPack(loader, texturePack, blendMap, 1235);
 	}
