@@ -38,7 +38,7 @@ public class Game extends TankernnGame3D {
 			e.printStackTrace();
 		}
 		
-		player = new Player(loader.getModel(0), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(0), terrainPack);
+		player = new Player(loader.getModel(0), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(loader.getModel(0).getModel().id), terrainPack);
 		
 		entities.add(player);
 		camera = new PlayerCamera(player, terrainPack);
