@@ -38,7 +38,7 @@ public class Game extends TankernnGame3D {
 			e.printStackTrace();
 		}
 		
-		player = new Player(loader.getModel(3), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(0), terrainPack);
+		player = new Player(loader.getModel(0), new Vector3f(0, 0, 0), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(0), terrainPack);
 		
 		entities.add(player);
 		camera = new PlayerCamera(player, terrainPack);
@@ -59,9 +59,9 @@ public class Game extends TankernnGame3D {
 			e.printStackTrace();
 		}
 		
-		entities.add(new Entity3D(loader.getModel(2), new Vector3f(10, 10, 10), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(2)));
+		entities.add(new Entity3D(loader.getModel(2), new Vector3f(10, 10, 10), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(1)));
 		
-		entities.add(new Entity3D(loader.getModel(3), new Vector3f(10, 10, 10), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(2)));
+		entities.add(new Entity3D(loader.getModel(3), new Vector3f(10, 10, 10), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(1)));
 		
 		postProcessor = new PostProcessor(loader);
 		picker = new MousePicker(camera, camera.getProjectionMatrix(), entities, guiMaster.getGuis());

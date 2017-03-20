@@ -2,8 +2,9 @@
 	{
 		name: "player",
 		id: 0,
-		model: "character.obj",
-		texture: "white.png"
+		model: "character.dae",
+		texture: "theo.png",
+		animations: "character.anim"
 	},
 	{
 		name: "barrel",
@@ -18,10 +19,8 @@
 	{
 		name: "cowboy",
 		id: 3,
-		model: "model.dae",
+		model: "cowboy.dae",
 		texture: "diffuse.png",
-		animations: {
-			"run": "model.dae"
-		}
+		animations: "cowboy.anim"
 	}
 ]
