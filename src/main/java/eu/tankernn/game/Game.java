@@ -86,10 +86,9 @@ public class Game extends TankernnGame3D {
 	
 	public void update() {
 		super.update();
-		//TODO Check if there is a water tile above
-		if (camera.getPosition().y < 0 && postProcessor.blurFactor < 2)
+		if (waterMaster.isPointUnderWater(camera.getPosition()) && postProcessor.blurFactor < 2)
 			postProcessor = new PostProcessor(loader, true);
-		else if (camera.getPosition().y > 0 && postProcessor.blurFactor > 0)
+		else if (!waterMaster.isPointUnderWater(camera.getPosition()) && postProcessor.blurFactor > 0)
 			postProcessor = new PostProcessor(loader, false);
 		if (picker.getCurrentTerrainPoint() != null) {
 			entities.get(1).setPosition(picker.getCurrentTerrainPoint());
