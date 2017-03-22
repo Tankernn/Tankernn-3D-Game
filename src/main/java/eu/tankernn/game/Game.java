@@ -93,6 +93,11 @@ public class Game extends TankernnGame3D {
 		if (picker.getCurrentTerrainPoint() != null) {
 			entities.get(1).setPosition(picker.getCurrentTerrainPoint());
 		}
+		for (Entity3D e : entities)
+			if (e.equals(picker.getCurrentEntity()))
+				e.setScale(2);
+			else
+				e.setScale(1);
 	}
 	
 	public static void main(String[] args) {
