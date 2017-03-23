@@ -12,12 +12,13 @@ import org.lwjgl.util.vector.Vector3f;
 
 import eu.tankernn.gameEngine.GameLauncher;
 import eu.tankernn.gameEngine.TankernnGame3D;
-import eu.tankernn.gameEngine.entities.BasicProjectile;
 import eu.tankernn.gameEngine.entities.Entity3D;
 import eu.tankernn.gameEngine.entities.Light;
 import eu.tankernn.gameEngine.entities.Player;
 import eu.tankernn.gameEngine.entities.PlayerCamera;
 import eu.tankernn.gameEngine.entities.Projectile;
+import eu.tankernn.gameEngine.entities.TargetedProjectile;
+import eu.tankernn.gameEngine.loader.models.AABB;
 import eu.tankernn.gameEngine.loader.textures.TerrainTexturePack;
 import eu.tankernn.gameEngine.loader.textures.Texture;
 import eu.tankernn.gameEngine.particles.ParticleMaster;
@@ -102,7 +103,7 @@ public class Game extends TankernnGame3D {
 				ParticleSystem system = new ParticleSystem(new ParticleTexture(Texture.newTexture(new InternalFile("particles/cosmic.png")).create(), 4, false), 50, 1, 0, 1);
 				particleMaster.addSystem(system);
 				
-				Projectile p = new BasicProjectile(player, new Vector3f(player.getPosition()), (Vector3f) player.get2dRotation().scale(50), 100, system);
+				Projectile p = new TargetedProjectile(terrainPack, null, new Vector3f(player.getPosition()), entities.get(1), 50, new AABB(new Vector3f(0, 0, 0), new Vector3f(0.1f, 0.1f, 0.1f)), system);
 				projectiles.add(p);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
