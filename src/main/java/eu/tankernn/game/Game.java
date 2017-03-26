@@ -8,6 +8,7 @@ import static eu.tankernn.game.Settings.TEXTURE_FILES;
 import java.io.FileNotFoundException;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import eu.tankernn.gameEngine.GameLauncher;
@@ -16,8 +17,12 @@ import eu.tankernn.gameEngine.entities.Entity3D;
 import eu.tankernn.gameEngine.entities.Light;
 import eu.tankernn.gameEngine.entities.Player;
 import eu.tankernn.gameEngine.entities.PlayerCamera;
+import eu.tankernn.gameEngine.entities.npc.NPC;
+import eu.tankernn.gameEngine.entities.npc.RoamingArea;
 import eu.tankernn.gameEngine.entities.projectiles.Projectile;
 import eu.tankernn.gameEngine.entities.projectiles.TargetedProjectile;
+import eu.tankernn.gameEngine.loader.font.FontType;
+import eu.tankernn.gameEngine.loader.font.GUIText;
 import eu.tankernn.gameEngine.loader.models.AABB;
 import eu.tankernn.gameEngine.loader.textures.TerrainTexturePack;
 import eu.tankernn.gameEngine.loader.textures.Texture;
@@ -29,12 +34,16 @@ import eu.tankernn.gameEngine.renderEngine.DisplayManager;
 import eu.tankernn.gameEngine.renderEngine.MasterRenderer;
 import eu.tankernn.gameEngine.renderEngine.water.WaterMaster;
 import eu.tankernn.gameEngine.renderEngine.water.WaterTile;
+import eu.tankernn.gameEngine.settings.Settings;
+import eu.tankernn.gameEngine.terrains.Terrain;
 import eu.tankernn.gameEngine.terrains.TerrainPack;
 import eu.tankernn.gameEngine.util.InternalFile;
 import eu.tankernn.gameEngine.util.MousePicker;
 
 public class Game extends TankernnGame3D {
 	private float cooldown;
+	
+	GUIText fpsText, text;
 	
 	public Game() {
 		super(Settings.GAME_NAME, TEXTURE_FILES, NIGHT_TEXTURE_FILES, new Light(new Vector3f(1, 1000, 1000), new Vector3f(1f, 1f, 1f)));
@@ -59,12 +68,29 @@ public class Game extends TankernnGame3D {
 		}
 		particleMaster = new ParticleMaster(loader, camera.getProjectionMatrix());
 		
-		entities.add(new Entity3D(loader.getModel(2), new Vector3f(10, 10, 10), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(loader.getModel(2).getModel().id)));
+		entities.add(new Entity3D(loader.getModel(2), new Vector3f(10, 10, 10), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(loader.getModel(2).getModel().id), terrainPack));
 		
-		entities.add(new Entity3D(loader.getModel(3), new Vector3f(10, 10, 10), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(loader.getModel(3).getModel().id)));
+		entities.add(new Entity3D(loader.getModel(3), new Vector3f(10, 10, 10), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(loader.getModel(3).getModel().id), terrainPack));
+		
+		RoamingArea roam = new RoamingArea(new Vector2f(0, 0), new Vector2f(100, 100));
+		
+		for (int i = 0; i < 10; i++)
+			entities.add(new NPC(loader.getModel(2), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(loader.getModel(2).getModel().id), roam, 10, terrainPack));
 		
 		postProcessor = new PostProcessor(loader);
 		picker = new MousePicker(camera, camera.getProjectionMatrix(), entities, guiMaster.getGuis());
+		
+		FontType font;
+		try {
+			font = new FontType(loader.loadTexture("arial.png"), new InternalFile("arial.fnt"));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return;
+		}
+		text = new GUIText("Sample text", 1, font, new Vector2f(0.5f, 0.0f), 0.5f, false).setColor(0, 1, 0);
+		fpsText = new GUIText("FPS: ", 1, font, new Vector2f(0.0f, 0.0f), 0.5f, false).setColor(1, 1, 1);
+		textMaster.loadText(fpsText);
+		textMaster.loadText(text);
 	}
 	
 	private void setupTerrain() throws FileNotFoundException {
@@ -93,6 +119,18 @@ public class Game extends TankernnGame3D {
 		if (picker.getCurrentTerrainPoint() != null) {
 			entities.get(1).setPosition(picker.getCurrentTerrainPoint());
 		}
+		
+		// Update debug info
+		if (true) {
+			Terrain currentTerrain = terrainPack.getTerrainByWorldPos(player.getPosition().x, player.getPosition().z);
+			if (currentTerrain != null) {
+				Vector3f pos = player.getPosition();
+				String textString = "X: " + Math.floor(pos.x) + " Y: " + Math.floor(pos.y) + " Z: " + Math.floor(pos.z) + " Current terrain: " + currentTerrain.getX() / Settings.TERRAIN_SIZE + ":" + currentTerrain.getZ() / Settings.TERRAIN_SIZE;
+				text.setText(textString);
+				fpsText.setText(String.format("FPS: %.2f", 1f / DisplayManager.getFrameTimeSeconds()));
+			}
+		}
+		
 		for (Entity3D e: entities)
 			if (e.equals(picker.getCurrentEntity()))
 				e.setScale(2);
@@ -100,7 +138,7 @@ public class Game extends TankernnGame3D {
 				e.setScale(1);
 		if (Keyboard.isKeyDown(Keyboard.KEY_E) && cooldown <= 0) {
 			try {
-				ParticleSystem system = new ParticleSystem(new ParticleTexture(Texture.newTexture(new InternalFile("particles/cosmic.png")).create(), 4, false), 50, 1, 0, 1);
+				ParticleSystem system = new ParticleSystem(new ParticleTexture(Texture.newTexture(new InternalFile("particles/cosmic.png")).create(), 4, true), 50, 1, 0, 1);
 				particleMaster.addSystem(system);
 				
 				Projectile p = new TargetedProjectile(terrainPack, null, new Vector3f(player.getPosition()), entities.get(1), 50, new AABB(new Vector3f(0, 0, 0), new Vector3f(0.1f, 0.1f, 0.1f)), system);
