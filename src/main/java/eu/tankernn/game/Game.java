@@ -19,6 +19,7 @@ import eu.tankernn.gameEngine.entities.Player;
 import eu.tankernn.gameEngine.entities.PlayerCamera;
 import eu.tankernn.gameEngine.entities.npc.NPC;
 import eu.tankernn.gameEngine.entities.npc.RoamingArea;
+import eu.tankernn.gameEngine.entities.npc.RoamingBehavior;
 import eu.tankernn.gameEngine.entities.projectiles.Projectile;
 import eu.tankernn.gameEngine.entities.projectiles.TargetedProjectile;
 import eu.tankernn.gameEngine.loader.font.FontType;
@@ -75,7 +76,7 @@ public class Game extends TankernnGame3D {
 		RoamingArea roam = new RoamingArea(new Vector2f(0, 0), new Vector2f(100, 100));
 		
 		for (int i = 0; i < 10; i++)
-			entities.add(new NPC(loader.getModel(2), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(loader.getModel(2).getModel().id), roam, 10, terrainPack));
+			entities.add(new NPC(loader.getModel(1), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(loader.getModel(1).getModel().id), terrainPack, new RoamingBehavior(roam, 10)));
 		
 		postProcessor = new PostProcessor(loader);
 		picker = new MousePicker(camera, camera.getProjectionMatrix(), entities, guiMaster.getGuis());
