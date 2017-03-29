@@ -63,7 +63,8 @@ public class Game extends TankernnGame3D {
 		renderer = new MasterRenderer(loader, camera, sky);
 		try {
 			waterMaster = new WaterMaster(loader, loader.loadTexture(DUDV_MAP), loader.loadTexture(NORMAL_MAP), camera);
-			setupWater();
+			WaterTile water = new WaterTile(50, 50, 0, 50);
+			waterMaster.addWaterTile(water);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -79,7 +80,7 @@ public class Game extends TankernnGame3D {
 			entities.add(new NPC(loader.getModel(1), new Vector3f(0, 0, 0), 1, loader.getBoundingBox(loader.getModel(1).getModel().id), terrainPack, new RoamingBehavior(roam, 10)));
 		
 		postProcessor = new PostProcessor(loader);
-		picker = new MousePicker(camera, camera.getProjectionMatrix(), entities, guiMaster.getGuis());
+		picker = new MousePicker(camera);
 		
 		FontType font;
 		try {
@@ -104,11 +105,6 @@ public class Game extends TankernnGame3D {
 		Texture blendMap = loader.loadTexture("textures/blendMap.png");
 		
 		terrainPack = new TerrainPack(loader, texturePack, blendMap, 1235);
-	}
-	
-	private void setupWater() {
-		WaterTile water = new WaterTile(50, 50, 0, 50);
-		waterMaster.addWaterTile(water);
 	}
 	
 	public void update() {
