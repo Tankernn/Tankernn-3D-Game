@@ -33,7 +33,6 @@ import eu.tankernn.gameEngine.particles.ParticleTexture;
 import eu.tankernn.gameEngine.postProcessing.PostProcessor;
 import eu.tankernn.gameEngine.renderEngine.DisplayManager;
 import eu.tankernn.gameEngine.renderEngine.MasterRenderer;
-import eu.tankernn.gameEngine.renderEngine.gui.floating.FloatingTexture;
 import eu.tankernn.gameEngine.renderEngine.gui.floating.FloatingTextureRenderer;
 import eu.tankernn.gameEngine.renderEngine.water.WaterMaster;
 import eu.tankernn.gameEngine.renderEngine.water.WaterTile;
@@ -47,6 +46,7 @@ public class Game extends TankernnGame3D {
 	private float cooldown;
 	
 	private GUIText fpsText, text;
+	private FontType font;
 	
 	public Game() {
 		super(Settings.GAME_NAME, TEXTURE_FILES, NIGHT_TEXTURE_FILES, new Light(new Vector3f(1, 1000, 1000), new Vector3f(1f, 1f, 1f)));
@@ -84,7 +84,6 @@ public class Game extends TankernnGame3D {
 		postProcessor = new PostProcessor(loader);
 		picker = new MousePicker(camera);
 		
-		FontType font;
 		try {
 			font = new FontType(loader.loadTexture("arial.png"), new InternalFile("arial.fnt"));
 		} catch (FileNotFoundException e) {
@@ -98,11 +97,11 @@ public class Game extends TankernnGame3D {
 		
 		floatingRenderer = new FloatingTextureRenderer(loader, camera.getProjectionMatrix());
 		
-		try {
-			floatTextures.add(new FloatingTexture(loader.loadTexture("textures/theo.png"), new Vector3f(0, 0, 0), new Vector2f(10, 10)));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			floatTextures.add(new FloatingTexture(loader.loadTexture("textures/theo.png"), new Vector3f(0, 0, 0), new Vector2f(10, 10)));
+//		} catch (FileNotFoundException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	private void setupTerrain() throws FileNotFoundException {
@@ -150,6 +149,9 @@ public class Game extends TankernnGame3D {
 				
 				Projectile p = new TargetedProjectile(terrainPack, null, new Vector3f(player.getPosition()), entities.get(1), 50, new AABB(new Vector3f(0, 0, 0), new Vector3f(0.1f, 0.1f, 0.1f)), system);
 				projectiles.add(p);
+				Vector3f pos = new Vector3f(player.getPosition());
+				pos.y += 40;
+				particleMaster.addTextParticle("Mejmej", 10, font, pos);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
@@ -158,6 +160,11 @@ public class Game extends TankernnGame3D {
 		
 		if (cooldown > 0)
 			cooldown -= DisplayManager.getFrameTimeSeconds();
+	}
+	
+	@Override
+	public void render() {
+		super.render();
 	}
 	
 	public static void main(String[] args) {
