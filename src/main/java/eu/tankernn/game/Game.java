@@ -22,7 +22,8 @@ import eu.tankernn.gameEngine.entities.npc.RoamingArea;
 import eu.tankernn.gameEngine.entities.npc.RoamingBehavior;
 import eu.tankernn.gameEngine.entities.projectiles.Projectile;
 import eu.tankernn.gameEngine.entities.projectiles.TargetedProjectile;
-import eu.tankernn.gameEngine.loader.font.FontType;
+import eu.tankernn.gameEngine.loader.font.Font;
+import eu.tankernn.gameEngine.loader.font.FontFamily;
 import eu.tankernn.gameEngine.loader.font.GUIText;
 import eu.tankernn.gameEngine.loader.models.AABB;
 import eu.tankernn.gameEngine.loader.textures.TerrainTexturePack;
@@ -46,7 +47,7 @@ public class Game extends TankernnGame3D {
 	private float cooldown;
 	
 	private GUIText fpsText, text;
-	private FontType font;
+	private Font font;
 	
 	public Game() {
 		super(Settings.GAME_NAME, TEXTURE_FILES, NIGHT_TEXTURE_FILES, new Light(new Vector3f(1, 1000, 1000), new Vector3f(1f, 1f, 1f)));
@@ -85,13 +86,13 @@ public class Game extends TankernnGame3D {
 		picker = new MousePicker(camera);
 		
 		try {
-			font = new FontType(loader.loadTexture("arial.png"), new InternalFile("arial.fnt"));
+			font = new Font(new FontFamily(loader.loadTexture("arial.png"), new InternalFile("arial.fnt")), 2, 0.5f, 0.1f, 0.0f, 0.5f, new Vector3f(1, 0, 1), new Vector3f(0.2f, 0.2f, 0.2f));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return;
 		}
-		text = new GUIText("Sample text", 1, font, new Vector2f(0.5f, 0.0f), 0.5f, false).setColor(0, 1, 0);
-		fpsText = new GUIText("FPS: ", 1, font, new Vector2f(0.0f, 0.0f), 0.5f, false).setColor(1, 1, 1);
+		text = new GUIText("Sample text", font, new Vector2f(0.5f, 0.0f), 0.5f, false);
+		fpsText = new GUIText("FPS: ", font, new Vector2f(0.0f, 0.0f), 0.5f, false);
 		textMaster.loadText(fpsText);
 		textMaster.loadText(text);
 		
@@ -150,8 +151,8 @@ public class Game extends TankernnGame3D {
 				Projectile p = new TargetedProjectile(terrainPack, null, new Vector3f(player.getPosition()), entities.get(1), 50, new AABB(new Vector3f(0, 0, 0), new Vector3f(0.1f, 0.1f, 0.1f)), system);
 				projectiles.add(p);
 				Vector3f pos = new Vector3f(player.getPosition());
-				pos.y += 40;
-				particleMaster.addTextParticle("Mejmej", 10, font, pos);
+				pos.y += 20;
+				particleMaster.addTextParticle("10", font, pos);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
