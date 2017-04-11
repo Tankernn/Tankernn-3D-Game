@@ -1,6 +1,7 @@
 package eu.tankernn.game;
 
 import static eu.tankernn.game.Settings.DUDV_MAP;
+import static eu.tankernn.game.Settings.GAME_NAME;
 import static eu.tankernn.game.Settings.NIGHT_TEXTURE_FILES;
 import static eu.tankernn.game.Settings.NORMAL_MAP;
 import static eu.tankernn.game.Settings.TEXTURE_FILES;
@@ -50,7 +51,7 @@ public class Game extends TankernnGame3D {
 	private Font font;
 	
 	public Game() {
-		super(Settings.GAME_NAME, TEXTURE_FILES, NIGHT_TEXTURE_FILES, new Light(new Vector3f(1, 1000, 1000), new Vector3f(1f, 1f, 1f)));
+		super(GAME_NAME, TEXTURE_FILES, NIGHT_TEXTURE_FILES, new Light(new Vector3f(1, 1000, 1000), new Vector3f(1f, 1f, 1f)));
 		
 		try {
 			setupTerrain();
@@ -86,7 +87,7 @@ public class Game extends TankernnGame3D {
 		picker = new MousePicker(camera);
 		
 		try {
-			font = new Font(new FontFamily(loader.loadTexture("arial.png"), new InternalFile("arial.fnt")), 2, 0.5f, 0.1f, 0.0f, 0.5f, new Vector3f(1, 0, 1), new Vector3f(0.2f, 0.2f, 0.2f));
+			font = new Font(new FontFamily(loader.loadTexture("arial.png"), new InternalFile("arial.fnt")), 2, new Vector3f(1, 0, 1), new Vector3f(0.2f, 0.2f, 0.2f));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return;
