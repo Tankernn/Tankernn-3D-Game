@@ -66,7 +66,7 @@ public class Game extends TankernnGame3D {
 		
 		renderer = new MasterRenderer(loader, camera, sky);
 		try {
-			waterMaster = new WaterMaster(loader, loader.loadTexture(DUDV_MAP), loader.loadTexture(NORMAL_MAP), camera);
+			waterMaster = new WaterMaster(loader, loader.loadTexture(new InternalFile(DUDV_MAP)), loader.loadTexture(new InternalFile(NORMAL_MAP)), camera);
 			WaterTile water = new WaterTile(50, 50, 0, 50);
 			waterMaster.addWaterTile(water);
 		} catch (FileNotFoundException e) {
@@ -87,7 +87,7 @@ public class Game extends TankernnGame3D {
 		picker = new MousePicker(camera);
 		
 		try {
-			font = new Font(new FontFamily(loader.loadTexture("arial.png"), new InternalFile("arial.fnt")), 2, new Vector3f(1, 0, 1), new Vector3f(0.2f, 0.2f, 0.2f));
+			font = new Font(new FontFamily(loader.loadTextureAtlas(new InternalFile("arial.png")), new InternalFile("arial.fnt")), 2, new Vector3f(1, 0, 1), new Vector3f(0.2f, 0.2f, 0.2f));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return;
@@ -107,13 +107,13 @@ public class Game extends TankernnGame3D {
 	}
 	
 	private void setupTerrain() throws FileNotFoundException {
-		Texture backgroundTexture = loader.loadTexture("textures/grassy.png");
-		Texture rTexture = loader.loadTexture("textures/dirt.png");
-		Texture gTexture = loader.loadTexture("textures/pinkFlowers.png");
-		Texture bTexture = loader.loadTexture("textures/path.png");
+		Texture backgroundTexture = loader.loadTexture(new InternalFile("textures/grassy.png"));
+		Texture rTexture = loader.loadTexture(new InternalFile("textures/dirt.png"));
+		Texture gTexture = loader.loadTexture(new InternalFile("textures/pinkFlowers.png"));
+		Texture bTexture = loader.loadTexture(new InternalFile("textures/path.png"));
 		
 		TerrainTexturePack texturePack = new TerrainTexturePack(backgroundTexture, rTexture, gTexture, bTexture);
-		Texture blendMap = loader.loadTexture("textures/blendMap.png");
+		Texture blendMap = loader.loadTexture(new InternalFile("textures/blendMap.png"));
 		
 		terrainPack = new TerrainPack(loader, texturePack, blendMap, 1235);
 	}
@@ -146,7 +146,7 @@ public class Game extends TankernnGame3D {
 				e.setScale(new Vector3f(1, 1, 1));
 		if (Keyboard.isKeyDown(Keyboard.KEY_E) && cooldown <= 0) {
 			try {
-				ParticleSystem system = new ParticleSystem(new ParticleTexture(Texture.newTexture(new InternalFile("particles/cosmic.png")).create(), 4, true), 50, 1, 0, 1);
+				ParticleSystem system = new ParticleSystem(new ParticleTexture(loader.loadTexture(new InternalFile("particles/cosmic.png")), 4, true), 50, 1, 0, 1);
 				particleMaster.addSystem(system);
 				
 				Projectile p = new TargetedProjectile(terrainPack, null, new Vector3f(player.getPosition()), entities.get(1), 50, new AABB(new Vector3f(0, 0, 0), new Vector3f(0.1f, 0.1f, 0.1f)), system);
