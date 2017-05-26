@@ -1,6 +1,7 @@
 package eu.tankernn.game;
 
 public class Settings {
+	public static final boolean ONLINE = true;
 	public static final boolean DEBUG = false;
 	public static final String GAME_NAME = "Tankernn game engine tester";
 

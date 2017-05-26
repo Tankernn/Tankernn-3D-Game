@@ -4,6 +4,7 @@ import static eu.tankernn.game.Settings.DUDV_MAP;
 import static eu.tankernn.game.Settings.GAME_NAME;
 import static eu.tankernn.game.Settings.NIGHT_TEXTURE_FILES;
 import static eu.tankernn.game.Settings.NORMAL_MAP;
+import static eu.tankernn.game.Settings.ONLINE;
 import static eu.tankernn.game.Settings.TEXTURE_FILES;
 
 import java.io.FileNotFoundException;
@@ -14,6 +15,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
+import eu.tankernn.game.networking.GameClientHandler;
 import eu.tankernn.gameEngine.GameLauncher;
 import eu.tankernn.gameEngine.TankernnGame3D;
 import eu.tankernn.gameEngine.entities.Entity3D;
@@ -47,6 +49,19 @@ import eu.tankernn.gameEngine.terrains.Terrain;
 import eu.tankernn.gameEngine.terrains.TerrainPack;
 import eu.tankernn.gameEngine.util.InternalFile;
 import eu.tankernn.gameEngine.util.MousePicker;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.handler.timeout.ReadTimeoutHandler;
 
 public class Game extends TankernnGame3D {
 	private float cooldown;
@@ -56,6 +71,8 @@ public class Game extends TankernnGame3D {
 
 	private FlareManager flareManager;
 	private Sun sun;
+
+	private Channel channel;
 
 	public Game() {
 		super(GAME_NAME, TEXTURE_FILES, NIGHT_TEXTURE_FILES);
@@ -121,6 +138,35 @@ public class Game extends TankernnGame3D {
 			particleMaster.addParticle(sun);
 			lights.add(sun);
 		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		if (ONLINE)
+			connectOnline();
+	}
+
+	private void connectOnline() {
+		EventLoopGroup workerGroup = new NioEventLoopGroup();
+
+		try {
+			Bootstrap b = new Bootstrap();
+			b.group(workerGroup);
+			b.channel(NioSocketChannel.class);
+			b.option(ChannelOption.SO_KEEPALIVE, true);
+			b.handler(new ChannelInitializer<SocketChannel>() {
+				@Override
+				public void initChannel(SocketChannel ch) throws Exception {
+					ch.pipeline().addLast("objectDecoder", new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
+					ch.pipeline().addLast("objectEncoder", new ObjectEncoder());
+					ch.pipeline().addLast("timeouthandler", new ReadTimeoutHandler(30));
+					ch.pipeline().addLast(new IdleStateHandler(0, 0, 29));
+					ch.pipeline().addLast(new GameClientHandler(Game.this));
+				}
+			});
+
+			// Start the client.
+			channel = b.connect("localhost", 25566).sync().channel();
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -202,6 +248,11 @@ public class Game extends TankernnGame3D {
 
 		if (cooldown > 0)
 			cooldown -= DisplayManager.getFrameTimeSeconds();
+
+		if (channel != null) { // Send player pos to server
+			channel.writeAndFlush(player.getPosition());
+		}
+
 	}
 
 	@Override
