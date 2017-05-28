@@ -21,9 +21,6 @@ import eu.tankernn.gameEngine.TankernnGame3D;
 import eu.tankernn.gameEngine.entities.Entity3D;
 import eu.tankernn.gameEngine.entities.Player;
 import eu.tankernn.gameEngine.entities.PlayerCamera;
-import eu.tankernn.gameEngine.entities.npc.NPC;
-import eu.tankernn.gameEngine.entities.npc.RoamingArea;
-import eu.tankernn.gameEngine.entities.npc.RoamingBehavior;
 import eu.tankernn.gameEngine.entities.projectiles.Projectile;
 import eu.tankernn.gameEngine.entities.projectiles.TargetedProjectile;
 import eu.tankernn.gameEngine.loader.font.Font;
@@ -60,7 +57,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
-import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 
 public class Game extends TankernnGame3D {
@@ -73,6 +69,9 @@ public class Game extends TankernnGame3D {
 	private Sun sun;
 
 	private Channel channel;
+	private EventLoopGroup workerGroup;
+
+	private float timeSinceStart;
 
 	public Game() {
 		super(GAME_NAME, TEXTURE_FILES, NIGHT_TEXTURE_FILES);
@@ -84,10 +83,9 @@ public class Game extends TankernnGame3D {
 		}
 
 		player = new Player(loader.getModel(0), new Vector3f(0, 0, 0),
-				loader.getBoundingBox(loader.getModel(0).getModel().id), terrainPack);
-
-		entities.add(player);
-		camera = new PlayerCamera(player, terrainPack);
+				loader.getBoundingBox(loader.getModel(0).getModel().id), world.getTerrainPack());
+		
+		camera = new PlayerCamera(player, world.getTerrainPack());
 
 		renderer = new MasterRenderer(loader, camera, sky);
 		try {
@@ -101,18 +99,12 @@ public class Game extends TankernnGame3D {
 		particleMaster = new ParticleMaster(loader, camera.getProjectionMatrix());
 		setupFlares();
 
-		entities.add(new Entity3D(loader.getModel(2), new Vector3f(10, 10, 10),
-				loader.getBoundingBox(loader.getModel(2).getModel().id), terrainPack));
-
-		entities.add(new Entity3D(loader.getModel(3), new Vector3f(10, 10, 10),
-				loader.getBoundingBox(loader.getModel(3).getModel().id), terrainPack));
-
-		RoamingArea roam = new RoamingArea(new Vector2f(0, 0), new Vector2f(100, 100));
-
-		for (int i = 0; i < 10; i++)
-			entities.add(new NPC(loader.getModel(1), new Vector3f(0, 0, 0), 1,
-					loader.getBoundingBox(loader.getModel(1).getModel().id), terrainPack,
-					new RoamingBehavior(roam, 10)));
+//		RoamingArea roam = new RoamingArea(new Vector2f(0, 0), new Vector2f(100, 100));
+//
+//		for (int i = 0; i < 10; i++)
+//			entities.add(new NPC(loader.getModel(1), new Vector3f(0, 0, 0), 1,
+//					loader.getBoundingBox(loader.getModel(1).getModel().id), terrainPack,
+//					new RoamingBehavior(roam, 10)));
 
 		postProcessor = new PostProcessor(loader);
 		picker = new MousePicker(camera);
@@ -136,7 +128,7 @@ public class Game extends TankernnGame3D {
 					30, new Vector3f(1f, 1f, 1f));
 			sun.setDirection(-0.8f, -0.5f, 0f);
 			particleMaster.addParticle(sun);
-			lights.add(sun);
+			world.getLights().add(sun);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -146,26 +138,25 @@ public class Game extends TankernnGame3D {
 	}
 
 	private void connectOnline() {
-		EventLoopGroup workerGroup = new NioEventLoopGroup();
+		workerGroup = new NioEventLoopGroup();
 
 		try {
-			Bootstrap b = new Bootstrap();
-			b.group(workerGroup);
-			b.channel(NioSocketChannel.class);
-			b.option(ChannelOption.SO_KEEPALIVE, true);
-			b.handler(new ChannelInitializer<SocketChannel>() {
+			Bootstrap bootstrap = new Bootstrap();
+			bootstrap.group(workerGroup);
+			bootstrap.channel(NioSocketChannel.class);
+			bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+			bootstrap.handler(new ChannelInitializer<SocketChannel>() {
 				@Override
 				public void initChannel(SocketChannel ch) throws Exception {
 					ch.pipeline().addLast("objectDecoder", new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
 					ch.pipeline().addLast("objectEncoder", new ObjectEncoder());
 					ch.pipeline().addLast("timeouthandler", new ReadTimeoutHandler(30));
-					ch.pipeline().addLast(new IdleStateHandler(0, 0, 29));
 					ch.pipeline().addLast(new GameClientHandler(Game.this));
 				}
 			});
 
 			// Start the client.
-			channel = b.connect("localhost", 25566).sync().channel();
+			channel = bootstrap.connect("localhost", 25566).sync().channel();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -196,22 +187,23 @@ public class Game extends TankernnGame3D {
 		TerrainTexturePack texturePack = new TerrainTexturePack(backgroundTexture, rTexture, gTexture, bTexture);
 		Texture blendMap = loader.loadTexture(new InternalFile("textures/blendMap.png"));
 
-		terrainPack = new TerrainPack(loader, texturePack, blendMap, 1235);
+		world.setTerrainPack(new TerrainPack(loader, texturePack, blendMap, 1235));
 	}
 
 	public void update() {
 		super.update();
+		timeSinceStart += DisplayManager.getFrameTimeSeconds();
 		if (waterMaster.isPointUnderWater(camera.getPosition()) && postProcessor.blurFactor < 2)
 			postProcessor = new PostProcessor(loader, true);
 		else if (!waterMaster.isPointUnderWater(camera.getPosition()) && postProcessor.blurFactor > 0)
 			postProcessor = new PostProcessor(loader, false);
-		if (picker.getCurrentTerrainPoint() != null) {
-			entities.get(1).setPosition(picker.getCurrentTerrainPoint());
-		}
+//		if (picker.getCurrentTerrainPoint() != null) {
+//			entities.get(1).setPosition(picker.getCurrentTerrainPoint());
+//		}
 
 		// Update debug info
 		if (true) {
-			Terrain currentTerrain = terrainPack.getTerrainByWorldPos(player.getPosition().x, player.getPosition().z);
+			Terrain currentTerrain = world.getTerrainPack().getTerrainByWorldPos(player.getPosition().x, player.getPosition().z);
 			if (currentTerrain != null) {
 				Vector3f pos = player.getPosition();
 				String textString = "X: " + Math.floor(pos.x) + " Y: " + Math.floor(pos.y) + " Z: " + Math.floor(pos.z)
@@ -222,7 +214,16 @@ public class Game extends TankernnGame3D {
 			}
 		}
 
-		for (Entity3D e : entities)
+		int daylength = 6000;
+
+		float progress = timeSinceStart * 1000;
+		progress %= daylength;
+		progress /= daylength;
+		progress *= 2;
+		progress -= 1;
+		sun.setDirection(progress, 0f, 0f);
+
+		for (Entity3D e : world.getEntities().values())
 			if (e.equals(picker.getCurrentEntity()))
 				e.setScale(new Vector3f(2, 2, 2));
 			else
@@ -234,9 +235,9 @@ public class Game extends TankernnGame3D {
 						1, 0, 1);
 				particleMaster.addSystem(system);
 
-				Projectile p = new TargetedProjectile(terrainPack, null, new Vector3f(player.getPosition()),
-						entities.get(1), 50, new AABB(new Vector3f(0, 0, 0), new Vector3f(0.1f, 0.1f, 0.1f)), system);
-				projectiles.add(p);
+				Projectile p = new TargetedProjectile(world.getTerrainPack(), null, new Vector3f(player.getPosition()),
+						world.getEntities().get(1), 50, new AABB(new Vector3f(0, 0, 0), new Vector3f(0.1f, 0.1f, 0.1f)), system);
+				world.getProjectiles().add(p);
 				Vector3f pos = new Vector3f(player.getPosition());
 				pos.y += 20;
 				particleMaster.addTextParticle("10", font, pos);
@@ -250,20 +251,33 @@ public class Game extends TankernnGame3D {
 			cooldown -= DisplayManager.getFrameTimeSeconds();
 
 		if (channel != null) { // Send player pos to server
-			channel.writeAndFlush(player.getPosition());
+			channel.writeAndFlush(player.getState());
 		}
 
 	}
 
 	@Override
 	public void preRender() {
-		renderer.renderShadowMap(entities, sun);
+		renderer.renderShadowMap(world.getEntities().values(), sun);
 	}
 
 	@Override
 	public void render() {
 		super.render();
 		flareManager.render(camera, sun.getPosition());
+	}
+
+	@Override
+	public void cleanUp() {
+		if (channel != null && channel.isOpen())
+			channel.close();
+		if (workerGroup != null)
+			try {
+				workerGroup.shutdownGracefully().sync();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		super.cleanUp();
 	}
 
 	public static void main(String[] args) {

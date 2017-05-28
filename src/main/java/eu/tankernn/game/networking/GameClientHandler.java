@@ -1,9 +1,12 @@
 package eu.tankernn.game.networking;
 
 import eu.tankernn.gameEngine.TankernnGame3D;
+import eu.tankernn.gameEngine.entities.EntityState;
+import eu.tankernn.gameEngine.multiplayer.LoginRequest;
+import eu.tankernn.gameEngine.multiplayer.LoginResponse;
+import eu.tankernn.gameEngine.multiplayer.WorldState;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.timeout.IdleStateEvent;
 
 public class GameClientHandler extends ChannelInboundHandlerAdapter {
 
@@ -15,31 +18,27 @@ public class GameClientHandler extends ChannelInboundHandlerAdapter {
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
-		ctx.writeAndFlush("Username");
+		try {
+			ctx.writeAndFlush(new LoginRequest("Username")).sync();
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
 	}
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) {
-		if (msg instanceof Integer) {
-			System.out.println("Seed: " + msg);
-		}
-
-		// else if (msg instanceof Pair<Integer, Vector3f>) {
-		// ByteBuf buf = (ByteBuf) msg;
-		// int entityId = buf.readInt();
-		// float x = buf.readFloat();
-		// float y = buf.readFloat();
-		// float z = buf.readFloat();
-		// game.getEntities().stream().filter(e -> e.getId() ==
-		// entityId).findFirst()
-		// .ifPresent(e -> e.getPosition().set(x, y, z));
-		// }
-	}
-
-	@Override
-	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-		if (evt instanceof IdleStateEvent) {
-			ctx.writeAndFlush(new Object());
+		if (msg instanceof LoginResponse) {
+			LoginResponse response = (LoginResponse) msg;
+			game.getPlayer().setState(response.playerState);
+			game.getWorld().getEntities().put(response.playerState.getId(), game.getPlayer());
+			System.out.println("Logged in.");
+		} else if (msg instanceof WorldState) {
+			game.getWorld().setState((WorldState) msg);
+		} else if (msg instanceof EntityState) {
+			EntityState state = (EntityState) msg;
+			game.getWorld().updateEntityState(state);
+		} else {
+			System.err.println("Unknown message: " + msg.toString());
 		}
 	}
 
