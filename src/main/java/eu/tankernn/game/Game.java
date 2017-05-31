@@ -23,6 +23,7 @@ import eu.tankernn.gameEngine.entities.Entity3D;
 import eu.tankernn.gameEngine.entities.EntityState;
 import eu.tankernn.gameEngine.entities.PlayerBehavior;
 import eu.tankernn.gameEngine.entities.PlayerCamera;
+import eu.tankernn.gameEngine.entities.ai.DieOnCollisionBehavior;
 import eu.tankernn.gameEngine.entities.ai.FollowBehavior;
 import eu.tankernn.gameEngine.entities.projectiles.ProjectileState;
 import eu.tankernn.gameEngine.loader.font.Font;
@@ -77,10 +78,12 @@ public class Game extends TankernnGame3D {
 	public Game() {
 		super(GAME_NAME, TEXTURE_FILES, NIGHT_TEXTURE_FILES);
 
+		TerrainPack terrain;
 		try {
-			world = new World(loader, particleMaster, setupTerrain());
+			terrain = setupTerrain();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			return;
 		}
 
 		try {
@@ -92,12 +95,16 @@ public class Game extends TankernnGame3D {
 			e1.printStackTrace();
 		}
 
-		EntityState playerState = new EntityState(0, -1, new Vector3f(0, 0, 0), new Vector3f(0, 0, 0),
-				new Vector3f(0, 0, 0), new Vector3f(1, 1, 1));
-		playerState.addBehavior(new PlayerBehavior());
-		player = world.spawnEntity(playerState);
+		camera = new PlayerCamera(player, terrain);
+		particleMaster = new ParticleMaster(loader, camera.getProjectionMatrix());
+		world = new World(loader, particleMaster, terrain);
 
-		camera = new PlayerCamera(player, world.getTerrainPack());
+		if (!ONLINE) {
+			EntityState playerState = new EntityState(0, -1, new Vector3f(0, 0, 0), new Vector3f(0, 0, 0),
+					new Vector3f(0, 0, 0), new Vector3f(1, 1, 1));
+			playerState.addBehavior(new PlayerBehavior());
+			player = world.updateEntityState(playerState);
+		}
 
 		renderer = new MasterRenderer(loader, camera, sky);
 		try {
@@ -108,16 +115,7 @@ public class Game extends TankernnGame3D {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-		particleMaster = new ParticleMaster(loader, camera.getProjectionMatrix());
 		setupFlares();
-
-		// RoamingArea roam = new RoamingArea(new Vector2f(0, 0), new
-		// Vector2f(100, 100));
-		//
-		// for (int i = 0; i < 10; i++)
-		// entities.add(new NPC(loader.getModel(1), new Vector3f(0, 0, 0), 1,
-		// loader.getBoundingBox(loader.getModel(1).getModel().id), terrainPack,
-		// new RoamingBehavior(roam, 10)));
 
 		postProcessor = new PostProcessor(loader);
 		picker = new MousePicker(camera);
@@ -245,8 +243,15 @@ public class Game extends TankernnGame3D {
 		if (Keyboard.isKeyDown(Keyboard.KEY_E) && cooldown <= 0) {
 			ProjectileState state = new ProjectileState(-1, 1, player.getPosition(), new Vector3f(0, 0, 0),
 					new Vector3f(0, 0, 0), new Vector3f(1, 1, 1), 40);
-			state.addBehavior(new FollowBehavior(world.getEntities().get(0), 10));
-			world.spawnEntity(state);
+			// int index =
+			// world.getEntities().values().stream().map(Entity3D::getState).filter(e
+			// -> e.getId() != player.getId()).findFirst().get().getId();
+			state.addBehavior(new FollowBehavior(new Vector3f(0, 0, 0), 10));
+			state.addBehavior(new DieOnCollisionBehavior());
+			if (!ONLINE)
+				world.updateEntityState(state);
+			else
+				channel.writeAndFlush(state).syncUninterruptibly();
 
 			Vector3f pos = new Vector3f(player.getPosition());
 			pos.y += 20;
@@ -285,6 +290,12 @@ public class Game extends TankernnGame3D {
 				e.printStackTrace();
 			}
 		super.cleanUp();
+	}
+
+	public void setPlayer(Entity3D spawnEntity) {
+		this.player = spawnEntity;
+		if (this.camera instanceof PlayerCamera)
+			((PlayerCamera) this.camera).setPlayer(spawnEntity);
 	}
 
 	public static void main(String[] args) {

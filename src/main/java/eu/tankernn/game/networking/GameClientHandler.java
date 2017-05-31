@@ -1,7 +1,8 @@
 package eu.tankernn.game.networking;
 
-import eu.tankernn.gameEngine.TankernnGame3D;
+import eu.tankernn.game.Game;
 import eu.tankernn.gameEngine.entities.EntityState;
+import eu.tankernn.gameEngine.entities.PlayerBehavior;
 import eu.tankernn.gameEngine.multiplayer.LoginRequest;
 import eu.tankernn.gameEngine.multiplayer.LoginResponse;
 import eu.tankernn.gameEngine.multiplayer.WorldState;
@@ -10,27 +11,24 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 
 public class GameClientHandler extends ChannelInboundHandlerAdapter {
 
-	private TankernnGame3D game;
+	private Game game;
 
-	public GameClientHandler(TankernnGame3D instance) {
+	public GameClientHandler(Game instance) {
 		this.game = instance;
 	}
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
-		try {
-			ctx.writeAndFlush(new LoginRequest("Username")).sync();
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
+		ctx.writeAndFlush(new LoginRequest("Username")).sync();
 	}
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) {
 		if (msg instanceof LoginResponse) {
 			LoginResponse response = (LoginResponse) msg;
-			game.getPlayer().setState(response.playerState);
-			game.getWorld().getEntities().put(response.playerState.getId(), game.getPlayer());
+			EntityState s = response.playerState;
+			s.addBehavior(new PlayerBehavior());
+			game.setPlayer(game.getWorld().updateEntityState(s, true));
 			System.out.println("Logged in.");
 		} else if (msg instanceof WorldState) {
 			game.getWorld().setState((WorldState) msg);
